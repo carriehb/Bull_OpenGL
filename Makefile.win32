@@ -1,0 +1,11 @@
+BIN = laserchase.exe
+CC = g++
+FLAGS = -Wall -pedantic
+INC = -I files/include
+LOC_LIB = files/win32/libglew32.dll.a ../common/win32/glfw3dll.a
+SYS_LIB = -lOpenGL32 -L ./ -lglew32 -lglfw3 -lm
+SRC = main.cpp
+
+all:
+	${CC} ${FLAGS} -o ${BIN} ${SRC} ${INC} ${LOC_LIB} ${SYS_LIB}
+

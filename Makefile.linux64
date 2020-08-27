@@ -1,0 +1,10 @@
+BIN = laserchase
+CC = g++
+FLAGS = -Wall -pedantic
+INC = -I files/include
+LOC_LIB = files/linux_x86_64/libGLEW.a -lglfw
+SYS_LIB = -lGL
+SRC = main.cpp
+
+all:
+	${CC} ${FLAGS} -o ${BIN} ${SRC} ${INC} ${LOC_LIB} ${SYS_LIB}
