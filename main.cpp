@@ -1,4 +1,13 @@
 
+
+/*	Carrie H Bull
+*	OpenGL Project: "Laser Chase"
+*	
+*	The purpose of this program is to create the image of a cat using only triangles that I created
+*		using coordinates, and to have the cat cycle back and forth across the screen, appearing to
+*		chase a red laser pointer light.
+*/
+
 #define GLEW_STATIC
 #define GL_LOG_FILE "gl.log"
 
@@ -477,7 +486,7 @@ int main() {
 				
 				};
 
-	// these are the strings of code for the shaders the vertex shader positions each vertex point
+	// Vertex shader creates the triangles
 	const char *vertex_shader = "#version 410\n"
 
 		"layout(location = 0) in vec3 vertex_position;"
@@ -491,7 +500,7 @@ int main() {
 		"	gl_Position = matrix * vec4(vertex_position, 1.0);"
 		"}";
 
-	// the fragment shader colours each fragment (pixel-sized area of the triangle) 
+	// Fragment shader colors the geometry
 	const char *fragment_shader = "#version 410\n"
 		"in vec3 colour;"
 		"out vec4 frag_colour;"
@@ -499,12 +508,10 @@ int main() {
 		"  frag_colour = vec4(colour, 1.0);"
 		"}";
 
-	// GL shader objects for vertex and fragment shader [components]
-	GLuint vert_shader, frag_shader;
-	// GL shader programme object [combined, to link] 
+	GLuint vert_shader, frag_shader; 
 	GLuint shader_programme;
 
-	// start GL context and O/S window using the GLFW helper library 
+	// Debugging
 	if (!glfwInit()) {
 		fprintf(stderr, "ERROR: could not start GLFW3\n");
 		return 1;
@@ -515,6 +522,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	// Creates the window
 	window = glfwCreateWindow(1280, 480, "Laser Chase", NULL, NULL);
 	if (!window) {
 		fprintf(stderr, "ERROR: could not open window with GLFW3\n");
@@ -526,7 +534,7 @@ int main() {
 
 	glfwMakeContextCurrent(window);
 
-	// start GLEW extension handler 
+	// GLEW extension handler 
 	glewExperimental = GL_TRUE;
 	glewInit();
 
@@ -538,11 +546,9 @@ int main() {
 	/* tell GL to only draw onto a pixel if the shape is closer to the viewer than
 		anything already drawn at that pixel*/
 	glEnable(GL_DEPTH_TEST); // enable depth-testing 
-	// with LESS depth-testing interprets a smaller depth value as meaning "closer" 
 	glDepthFunc(GL_LESS);
 
-	/* a vertex buffer object (VBO) is created here. this stores an array of data on the
-		graphics adapter's memory. in our case - the vertex points */
+	// VBOs that will hold the information for the vertex and fragment shaders
 	glGenBuffers(1, &c_points_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, c_points_vbo);
 	glBufferData(GL_ARRAY_BUFFER, 423 * sizeof(GLfloat), c_points, GL_STATIC_DRAW);
@@ -551,27 +557,21 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, c_colors_vbo);
 	glBufferData(GL_ARRAY_BUFFER, 423 * sizeof(GLfloat), c_colors, GL_STATIC_DRAW);
 
-	/* the vertex array object (vao) is a little descriptor that defines which data from
-		vertex buffer objects should be used as input variables to vertex shaders. in our
-		case - use our only VBO, and say 'every three floats is a variable' */
+	// VAO that combines the VBOs to get the image
 	glGenVertexArrays(1, &cat_vao);
 	glBindVertexArray(cat_vao);
 
+	// Binding the VBO
 	glBindBuffer(GL_ARRAY_BUFFER, c_points_vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	/* this VBO is already bound, but it's a good habit to explicitly specify which VBO's
-		data the following vertex attribute pointer refers to */
 
-		/* "attribute #0 is created from every 3 variables in the above buffer, of type float
-			(i.e. make me vec3s)" */
 	glBindBuffer(GL_ARRAY_BUFFER, c_colors_vbo);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-
+	
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	//						Second One
+	// Second VAO and its cooresponding VBOs
 
 	glGenBuffers(1, &l_points_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, l_points_vbo);
@@ -580,8 +580,7 @@ int main() {
 	glGenBuffers(1, &l_colors_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, l_colors_vbo);
 	glBufferData(GL_ARRAY_BUFFER, 54 * sizeof(GLfloat), l_colors, GL_STATIC_DRAW);
-
-
+	
 	glGenVertexArrays(1, &laser_vao);
 	glBindVertexArray(laser_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, l_points_vbo);
@@ -590,13 +589,8 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	/* here we copy the shader strings into GL shaders, and compile them. we then create an
-		executable shader 'program' and attach both of the compiled shaders. we link this,
-		which matches the outputs of the vertex shader to the inputs of the fragment shader,
-		etc. and it is then ready to use */
 
-		//						Shaders
-
+	// Creating a shader program that can be executed
 	vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	const GLchar *p = (const GLchar *)vertex_shader;
 	glShaderSource(vert_shader, 1, &p, NULL);
@@ -631,9 +625,8 @@ int main() {
 			shader_programme);
 		return false;
 	}
-
-
-	//							Final Stuff
+	
+	// Matrix and animation
 
 	GLfloat matrix[] = {
 		1.0f, 0.0f, 0.0f, 0.0f, 
@@ -647,18 +640,13 @@ int main() {
 	glUniformMatrix4fv(matrix_location, 7, GL_FALSE, matrix);
 
 
-	float speed = -0.5f; // move at 1 unit per second
+	float speed = -0.5f; 
 	float lastPos = 0.0f;
 	
 	glClearColor(0.05f, 0.0f, 0.1f, 1.0f);
 		
 
-	/* this loop clears the drawing surface, then draws the geometry described by the VAO onto the
-		drawing surface. we 'poll events' to see if the window was closed, etc. finally, we 'swap the
-		buffers' which displays our drawing surface onto the view area. we use a double-buffering
-		system which means that we have a 'currently displayed' surface, and 'currently being drawn'
-		surface. hence the 'swap' idea. in a single-buffering system we would see stuff being drawn
-		one-after-the-other */
+	// Main loop of the animation. 
 	while (!glfwWindowShouldClose(window)) {
 		
 		static double lastSec = glfwGetTime();
@@ -678,6 +666,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader_programme);
 
+		// Reflecting the image when it hits either side
 		matrix[12] = timePassed * speed + lastPos;
 		lastPos = matrix[12];
 		if (fabs(lastPos) > 1.0) {
@@ -688,6 +677,7 @@ int main() {
 		}
 		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, matrix);
 
+		// Binding each VAO
 		glBindVertexArray(cat_vao);
 		glDrawArrays(GL_TRIANGLES, 0, 141);
 
