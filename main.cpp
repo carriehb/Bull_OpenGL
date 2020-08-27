@@ -9,7 +9,6 @@
 */
 
 #define GLEW_STATIC
-#define GL_LOG_FILE "gl.log"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h> 
@@ -656,7 +655,6 @@ int main() {
 
 		if (timePassed > 0.25) {
 			lastSec = currSec;
-			double fps = (double)frameCount / timePassed;
 			timePassed = 0;
 		}
 		frameCount++;
